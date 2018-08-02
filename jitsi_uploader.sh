@@ -69,7 +69,8 @@ function dropbox_upload {
 #processes direct with uploads
 # $1 - path to directory for upload
 function process_upload_dir {
-
+    #final return defaults to success
+    FRET=0;
     for i in $1/*; do
       b=$(basename "$i")
       if [[ "$b" == "metadata.json" ]]; then
@@ -82,10 +83,10 @@ function process_upload_dir {
         MTIME=$(stat -c %Y "$i")
         FDATE=$(date --date="@$MTIME" '+%F %R')
         if [[ "$EXT" == "pdf" ]]; then
-          FINAL_UPLOAD_PATH="/Transcripts/Transcript of $URL_NAME on $FDATE.pdf"
+          FINAL_UPLOAD_PATH="/Transcripts/$URL_NAME on $FDATE.pdf"
           UPLOAD_FLAG=1
         elif [[ "$EXT" == "mp4" ]]; then
-          FINAL_UPLOAD_PATH="/Recordings/Recording of $URL_NAME on $FDATE.mp4"
+          FINAL_UPLOAD_PATH="/Recordings/$URL_NAME on $FDATE.mp4"
           UPLOAD_FLAG=1
         else
           #skip this one, not a known type
@@ -95,10 +96,15 @@ function process_upload_dir {
         if [[ $UPLOAD_FLAG == 1 ]]; then
           echo "Uploading file $i to path $FINAL_UPLOAD_PATH"
           $UPLOAD_FUNC "$i" "$FINAL_UPLOAD_PATH"
+          URET=$?
+          #assign the final return value if non-zero return was found on upload
+          if [[ $FRET == 0 ]] && [[ $URET != 0 ]]; then
+            FRET=$URET
+          fi
         fi
       fi
     done;
-    return 0;
+    return $FRET;
 }
 
 #now that everything is in order, run the uploader tool on the directory
