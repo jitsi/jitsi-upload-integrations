@@ -29,7 +29,7 @@ fi
 #only read token from metadata if token is not already defined
 [[ -z "$TOKEN" ]] && TOKEN=$(cat $METADATA_JSON | jq -r ".upload_credentials.token")
 [[ "$TOKEN" == "null" ]] && TOKEN=""
-[[ -z "$UPLOAD_TYPE" ]] && UPLOAD_TYPE=$(cat $METADATA_JSON | jq -r ".upload_credentials.type")
+[[ -z "$UPLOAD_TYPE" ]] && UPLOAD_TYPE=$(cat $METADATA_JSON | jq -r ".upload_credentials.service_name")
 [[ "$UPLOAD_TYPE" == "null" ]] && UPLOAD_TYPE=""
 URL=$(cat $METADATA_JSON | jq -r ".meeting_url")
 [[ "$URL" == "null" ]] && URL=""
