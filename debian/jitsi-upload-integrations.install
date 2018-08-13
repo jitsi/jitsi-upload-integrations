@@ -1,0 +1,4 @@
+#!/usr/bin/dh-exec
+
+dropbox/dropbox_uploader.sh usr/local/bin/dropbox_uploader.sh
+jitsi_uploader.sh usr/local/bin/jitsi_uploader.sh
