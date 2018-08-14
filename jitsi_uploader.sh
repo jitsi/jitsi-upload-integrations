@@ -2,8 +2,8 @@
 #TODO: source configuration from /etc/jitsi/upload somewhere
 #make this backed by a decent sized disk
 FAILED_UPLOAD_DIR="/tmp/failed"
-#assume supporting binaries are in /usr/local/bin
-BIN_PATH="/usr/local/bin"
+#assume supporting binaries are in /usr/bin
+BIN_PATH="/usr/bin"
 #append logs here
 UPLOAD_LOG_PATH="/tmp/upload-logs"
 
