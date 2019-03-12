@@ -36,6 +36,12 @@ URL=$(cat $METADATA_JSON | jq -r ".meeting_url")
 URL_NAME="${URL##*/}"
 
 if [[ -z "$UPLOAD_TYPE" ]]; then
+
+  if [[ -f $BIN_PATH/jitsi-recording-service.sh ]] && [[ -x $BIN_PATH/jitsi-recording-service.sh ]]; then
+    $BIN_PATH/jitsi-recording-service.sh $UPLOAD_DIR
+    exit $?
+  fi
+
   echo "No upload type found, skipping upload..."
   exit 4
 fi
