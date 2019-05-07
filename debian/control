@@ -7,6 +7,6 @@ Build-Depends: debhelper (>= 9)
 
 Package: jitsi-upload-integrations
 Architecture: all
-Depends: curl
+Depends: curl, jq
 Description: jitsi-upload-integrations
  Tools for uploading assets, meant for use with jibri or jigasi when sending media assets to 3rd party services such as DropBox
