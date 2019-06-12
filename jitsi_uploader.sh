@@ -4,8 +4,6 @@
 FAILED_UPLOAD_DIR="/tmp/failed"
 #assume supporting binaries are in /usr/bin
 BIN_PATH="/usr/bin"
-#append logs here
-UPLOAD_LOG_PATH="/tmp/upload-logs"
 
 UPLOAD_DIR=$1
 
@@ -114,7 +112,6 @@ function process_upload_dir {
 }
 
 #now that everything is in order, run the uploader tool on the directory
-(
 echo $(date) "START Uploader tool received path \"$UPLOAD_DIR\""
 echo $(date) $(ls -l $UPLOAD_DIR 2>&1)
 
@@ -133,8 +130,6 @@ else
     mkdir -p $FAILED_UPLOAD_PATH
     mv $UPLOAD_DIR/* $FAILED_UPLOAD_PATH
 fi
-exit $MRET
-) >> $UPLOAD_LOG_PATH 2>&1 &
 
 #finish cleanly, let upload continue in the background
-exit 0
+exit $MRET
