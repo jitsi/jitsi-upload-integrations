@@ -131,5 +131,5 @@ else
     mv $UPLOAD_DIR/* $FAILED_UPLOAD_PATH
 fi
 
-#finish cleanly, let upload continue in the background
+# exit based on return of upload processing
 exit $MRET
