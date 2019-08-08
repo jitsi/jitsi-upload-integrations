@@ -122,7 +122,8 @@ MRET=$?
 if [ $MRET -eq 0 ]; then
     echo $(date) "END SUCCESS Cleaning remaining upload files in \"$UPLOAD_DIR\""
     #remove the files from the directory
-#    rm $UPLOAD_DIR/*
+    rm $UPLOAD_DIR/*
+    rmdir $UPLOAD_DIR
 else
     FAILED_UPLOAD_PATH="$FAILED_UPLOAD_DIR/$(basename $UPLOAD_DIR)"
     echo $(date) "END FAILURE Moving remaining upload files in \"$UPLOAD_DIR\" to \"$FAILED_UPLOAD_DIR\""
