@@ -346,7 +346,7 @@ function check_http_response
     esac
 
     #Checking response file for generic errors
-    if grep -q "HTTP/1.1 400" "$RESPONSE_FILE"; then
+    if grep -q "^HTTP/[12].* 400" "$RESPONSE_FILE"; then
         ERROR_MSG=$(sed -n -e 's/{"error": "\([^"]*\)"}/\1/p' "$RESPONSE_FILE")
 
         case $ERROR_MSG in
@@ -577,7 +577,7 @@ function db_simple_upload_file
     check_http_response
 
     #Check
-    if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+    if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
         print "DONE\n"
     else
         print "FAILED\n"
@@ -646,7 +646,7 @@ function db_chunked_upload_file
         #check_http_response not needed, because we have to retry the request in case of error
 
         #Check
-        if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+        if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
             let OFFSET=$OFFSET+$CHUNK_REAL_SIZE
             UPLOAD_ERROR=0
             if [[ $VERBOSE != 1 ]]; then
@@ -680,7 +680,7 @@ function db_chunked_upload_file
         #check_http_response not needed, because we have to retry the request in case of error
 
         #Check
-        if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+        if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
             UPLOAD_ERROR=0
             break
         else
@@ -864,7 +864,7 @@ function db_download_file
     check_http_response
 
     #Check
-    if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+    if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
         print "DONE\n"
     else
         print "FAILED\n"
@@ -934,7 +934,7 @@ function db_account_info
     check_http_response
 
     #Check
-    if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+    if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
 
         name=$(sed -n 's/.*"display_name": "\([^"]*\).*/\1/p' "$RESPONSE_FILE")
         echo -e "\n\nName:\t\t$name"
@@ -965,7 +965,7 @@ function db_account_space
     check_http_response
 
     #Check
-    if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+    if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
 
         quota=$(sed -n 's/.*"allocated": \([0-9]*\).*/\1/p' "$RESPONSE_FILE")
         let quota_mb=$quota/1024/1024
@@ -1008,7 +1008,7 @@ function db_delete
     check_http_response
 
     #Check
-    if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+    if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
         print "DONE\n"
     else
         print "FAILED\n"
@@ -1037,7 +1037,7 @@ function db_move
     check_http_response
 
     #Check
-    if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+    if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
         print "DONE\n"
     else
         print "FAILED\n"
@@ -1066,7 +1066,7 @@ function db_copy
     check_http_response
 
     #Check
-    if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+    if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
         print "DONE\n"
     else
         print "FAILED\n"
@@ -1085,9 +1085,9 @@ function db_mkdir
     check_http_response
 
     #Check
-    if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+    if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
         print "DONE\n"
-    elif grep -q "^HTTP/1.1 403 Forbidden" "$RESPONSE_FILE"; then
+    elif grep -q "^HTTP/[12].* 403" "$RESPONSE_FILE"; then
         print "ALREADY EXISTS\n"
     else
         print "FAILED\n"
@@ -1126,7 +1126,7 @@ function db_list_outfile
         CURSOR=$(sed -n 's/.*"cursor": *"\([^"]*\)".*/\1/p' "$RESPONSE_FILE")
 
         #Check
-        if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+        if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
 
             #Extracting directory content [...]
             #and replacing "}, {" with "}\n{"
@@ -1249,14 +1249,14 @@ function db_monitor_nonblock
     $CURL_BIN $CURL_ACCEPT_CERTIFICATES -X POST -L -s --show-error --globoff -i -o "$RESPONSE_FILE" --header "Authorization: Bearer $OAUTH_ACCESS_TOKEN" --header "Content-Type: application/json" --data "{\"path\": \"$DIR_DST\",\"include_media_info\": false,\"include_deleted\": false,\"include_has_explicit_shared_members\": false}" "$API_LIST_FOLDER_URL" 2> /dev/null
     check_http_response
 
-    if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+    if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
 
         local CURSOR=$(sed -n 's/.*"cursor": *"\([^"]*\)".*/\1/p' "$RESPONSE_FILE")
 
         $CURL_BIN $CURL_ACCEPT_CERTIFICATES -X POST -L -s --show-error --globoff -i -o "$RESPONSE_FILE" --header "Content-Type: application/json" --data "{\"cursor\": \"$CURSOR\",\"timeout\": ${TIMEOUT}}" "$API_LONGPOLL_FOLDER" 2> /dev/null
         check_http_response
 
-        if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+        if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
             local CHANGES=$(sed -n 's/.*"changes" *: *\([a-z]*\).*/\1/p' "$RESPONSE_FILE")
         else
             ERROR_MSG=$(grep "Error in call" "$RESPONSE_FILE")
@@ -1338,7 +1338,7 @@ function db_share
     check_http_response
 
     #Check
-    if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+    if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
         print " > Share link: "
         SHARE_LINK=$(sed -n 's/.*"url": "\([^"]*\).*/\1/p' "$RESPONSE_FILE")
         echo "$SHARE_LINK"
@@ -1356,7 +1356,7 @@ function get_Share
     check_http_response
 
     #Check
-    if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+    if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
         print " > Share link: "
         SHARE_LINK=$(sed -n 's/.*"url": "\([^"]*\).*/\1/p' "$RESPONSE_FILE")
         echo "$SHARE_LINK"
@@ -1380,7 +1380,7 @@ function db_search
     check_http_response
 
     #Check
-    if grep -q "^HTTP/1.1 200 OK" "$RESPONSE_FILE"; then
+    if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
         print "DONE\n"
     else
         print "FAILED\n"
