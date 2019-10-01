@@ -66,7 +66,7 @@ APP_CREATE_URL="https://www.dropbox.com/developers/apps"
 RESPONSE_FILE="$TMP_DIR/du_resp_$RANDOM"
 CHUNK_FILE="$TMP_DIR/du_chunk_$RANDOM"
 TEMP_FILE="$TMP_DIR/du_tmp_$RANDOM"
-BIN_DEPS="sed basename date grep stat dd mkdir"
+BIN_DEPS="sed basename date grep stat dd mkdir head"
 VERSION="1.0"
 
 umask 077
@@ -581,7 +581,7 @@ function db_simple_upload_file
         print "DONE\n"
     else
         print "FAILED\n"
-        print "An error occurred requesting /upload\n"
+        print "An error occurred requesting /upload: "; head -n 1 "$RESPONSE_FILE"
         ERROR_STATUS=1
     fi
 }
@@ -662,7 +662,7 @@ function db_chunked_upload_file
             #On error, the upload is retried for max 3 times
             if [[ $UPLOAD_ERROR -gt 2 ]]; then
                 print " FAILED\n"
-                print "An error occurred requesting /chunked_upload\n"
+                print "An error occurred requesting /chunked_upload: "; head -n 1 "$RESPONSE_FILE"
                 ERROR_STATUS=1
                 return
             fi
@@ -690,7 +690,7 @@ function db_chunked_upload_file
             #On error, the commit is retried for max 3 times
             if [[ $UPLOAD_ERROR -gt 2 ]]; then
                 print " FAILED\n"
-                print "An error occurred requesting /commit_chunked_upload\n"
+                print "An error occurred requesting /commit_chunked_upload: "; head -n 1 "$RESPONSE_FILE"
                 ERROR_STATUS=1
                 return
             fi
@@ -867,7 +867,7 @@ function db_download_file
     if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
         print "DONE\n"
     else
-        print "FAILED\n"
+        print "FAILED: "; head -n 1 "$RESPONSE_FILE"
         rm -fr "$FILE_DST"
         ERROR_STATUS=1
         return
@@ -951,7 +951,7 @@ function db_account_info
         echo ""
 
     else
-        print "FAILED\n"
+        print "FAILED: "; head -n 1 "$RESPONSE_FILE"
         ERROR_STATUS=1
     fi
 }
@@ -981,7 +981,7 @@ function db_account_space
         echo ""
 
     else
-        print "FAILED\n"
+        print "FAILED: "; head -n 1 "$RESPONSE_FILE"
         ERROR_STATUS=1
     fi
 }
@@ -1011,7 +1011,7 @@ function db_delete
     if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
         print "DONE\n"
     else
-        print "FAILED\n"
+        print "FAILED: "; head -n 1 "$RESPONSE_FILE"
         ERROR_STATUS=1
     fi
 }
@@ -1040,7 +1040,7 @@ function db_move
     if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
         print "DONE\n"
     else
-        print "FAILED\n"
+        print "FAILED: "; head -n 1 "$RESPONSE_FILE"
         ERROR_STATUS=1
     fi
 }
@@ -1069,7 +1069,7 @@ function db_copy
     if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
         print "DONE\n"
     else
-        print "FAILED\n"
+        print "FAILED: "; head -n 1 "$RESPONSE_FILE"
         ERROR_STATUS=1
     fi
 }
@@ -1090,7 +1090,7 @@ function db_mkdir
     elif grep -q "^HTTP/[12].* 403" "$RESPONSE_FILE"; then
         print "ALREADY EXISTS\n"
     else
-        print "FAILED\n"
+        print "FAILED: "; head -n 1 "$RESPONSE_FILE"
         ERROR_STATUS=1
     fi
 }
@@ -1383,7 +1383,7 @@ function db_search
     if grep -q "^HTTP/[12].* 200" "$RESPONSE_FILE"; then
         print "DONE\n"
     else
-        print "FAILED\n"
+        print "FAILED: "; head -n 1 "$RESPONSE_FILE"
         ERROR_STATUS=1
     fi
 
