@@ -1,7 +1,13 @@
 #!/bin/bash
-#TODO: source configuration from /etc/jitsi/upload somewhere
+
+CONFIG_FILE_PATH="/etc/jitsi/uploader"
+
+# pull jitsi uploader environment var overrides if it exists
+[ -e  "$CONFIG_FILE_PATH" ] && . "$CONFIG_FILE_PATH"
+
 #make this backed by a decent sized disk
-FAILED_UPLOAD_DIR="/tmp/failed"
+[ -z "$FAILED_UPLOAD_DIR" ] && FAILED_UPLOAD_DIR="/tmp/failed"
+
 #assume supporting binaries are in /usr/bin
 BIN_PATH="/usr/bin"
 
