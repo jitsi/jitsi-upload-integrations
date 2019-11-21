@@ -70,6 +70,7 @@ esac
 # $1 - current path to source file
 # $2 - full path of destination
 function dropbox_upload {
+    echo "Upload method: dropbox"
     UPLOAD_BIN="$BIN_PATH/dropbox_uploader.sh"
     export OAUTH_ACCESS_TOKEN=$TOKEN
     $UPLOAD_BIN -b upload "$1" "$2"
