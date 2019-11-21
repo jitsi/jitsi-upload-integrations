@@ -13,7 +13,7 @@
 BIN_PATH="/usr/bin"
 
 #if not provided, path for custom recording script is pre-defined 
-[ -z "$CUSTOM_RECORDING_SERVICE_PATH" ] &&CUSTOM_RECORDING_SERVICE_PATH="$BIN_PATH/jitsi-recording-service.sh"
+[ -z "$CUSTOM_RECORDING_SERVICE_PATH" ] && CUSTOM_RECORDING_SERVICE_PATH="$BIN_PATH/jitsi-recording-service.sh"
 
 #db uploader function
 # $1 - current path to source file
