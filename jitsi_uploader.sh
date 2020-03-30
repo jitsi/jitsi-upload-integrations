@@ -59,26 +59,23 @@ esac
 
 # uploads the recording to an external storage service
 function custom_upload {
-    $BIN_PATH/jitsi-recording-service.sh $UPLOAD_DIR
-    return $?
-}
-
-#db uploader function
-# $1 - current path to source file
-# $2 - full path of destination
-function dropbox_upload {
-    echo "Upload method: dropbox"
-    UPLOAD_BIN="$BIN_PATH/dropbox_uploader.sh"
-    export OAUTH_ACCESS_TOKEN=$TOKEN
-    $UPLOAD_BIN -b upload "$1" "$2"
+    $BIN_PATH/jitsi-recording-service.sh $1
     return $?
 }
 
 #processes direct with uploads
 # $1 - path to directory for upload
-function process_upload_dir {
+function dropbox_upload {
+    echo "Upload method: dropbox"
     #final return defaults to success
     FRET=0;
+    if [[ -z $TOKEN ]]; then
+        echo "No upload credentials found, skipping upload..."
+        exit 5
+    fi
+    UPLOAD_BIN="$BIN_PATH/dropbox_uploader.sh"
+    export OAUTH_ACCESS_TOKEN=$TOKEN
+
     for i in $1/*; do
       b=$(basename "$i")
       if [[ "$b" == "metadata.json" ]]; then
@@ -103,7 +100,7 @@ function process_upload_dir {
 
         if [[ $UPLOAD_FLAG == 1 ]]; then
           echo "Uploading file $i to path $FINAL_UPLOAD_PATH"
-          $UPLOAD_FUNC "$i" "$FINAL_UPLOAD_PATH"
+          $UPLOAD_BIN -b upload "$i" "$FINAL_UPLOAD_PATH"
           URET=$?
           #assign the final return value if non-zero return was found on upload
           if [[ $FRET == 0 ]] && [[ $URET != 0 ]]; then
@@ -120,14 +117,7 @@ echo $(date) "START Uploader tool received path \"$UPLOAD_DIR\""
 echo $(date) $(ls -l $UPLOAD_DIR 2>&1)
 
 # main
-if [[ $UPLOAD_TYPE == "dropbox" ]] && [[ ! -z $TOKEN ]]; then
-  process_upload_dir $UPLOAD_DIR
-elif [[ $UPLOAD_TYPE == "custom" ]]; then
-  custom_upload
-else
-  echo "No upload credentials found, skipping upload..."
-  exit 5
-fi
+$UPLOAD_FUNC $UPLOAD_DIR
 
 MRET=$?
 
