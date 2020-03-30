@@ -11,6 +11,7 @@ CONFIG_FILE_PATH="/etc/jitsi/uploader"
 #assume supporting binaries are in /usr/bin
 BIN_PATH="/usr/bin"
 
+# the directory where the files and metadata exists
 UPLOAD_DIR=$1
 
 if [ -z "$UPLOAD_DIR" ]; then
@@ -39,32 +40,28 @@ URL=$(cat $METADATA_JSON | jq -r ".meeting_url")
 [[ "$URL" == "null" ]] && URL=""
 URL_NAME="${URL##*/}"
 
-if [[ -z "$UPLOAD_TYPE" ]]; then
-
-  if [[ -f $BIN_PATH/jitsi-recording-service.sh ]] && [[ -x $BIN_PATH/jitsi-recording-service.sh ]]; then
-    $BIN_PATH/jitsi-recording-service.sh $UPLOAD_DIR
-    exit $?
-  fi
-
-  echo "No upload type found, skipping upload..."
-  exit 4
-fi
-
-
-if [[ -z "$TOKEN" ]]; then
-  echo "No upload credentials found, skipping upload..."
-  exit 5
+if [[ -z "$UPLOAD_TYPE" &&  -f $BIN_PATH/jitsi-recording-service.sh && -x $BIN_PATH/jitsi-recording-service.sh ]]; then
+  UPLOAD_TYPE="custom"
 fi
 
 case "$UPLOAD_TYPE" in
-"dropbox")
+  "dropbox")
     UPLOAD_FUNC="dropbox_upload"
     ;;
-*)
+  "custom")
+    UPLOAD_FUNC="custom_upload"
+    ;;
+  *)
     echo "Unknown upload type $UPLOAD_TYPE, skipping upload..."
     exit 6
     ;;
 esac
+
+# uploads the recording to an external storage service
+function custom_upload {
+    $BIN_PATH/jitsi-recording-service.sh $UPLOAD_DIR
+    return $?
+}
 
 #db uploader function
 # $1 - current path to source file
@@ -122,7 +119,15 @@ function process_upload_dir {
 echo $(date) "START Uploader tool received path \"$UPLOAD_DIR\""
 echo $(date) $(ls -l $UPLOAD_DIR 2>&1)
 
-process_upload_dir $UPLOAD_DIR
+# main
+if [[ $UPLOAD_TYPE == "dropbox" ]] && [[ ! -z $TOKEN ]]; then
+  process_upload_dir $UPLOAD_DIR
+elif [[ $UPLOAD_TYPE == "custom" ]]; then
+  custom_upload
+else
+  echo "No upload credentials found, skipping upload..."
+  exit 5
+fi
 
 MRET=$?
 
