@@ -8,6 +8,9 @@ CONFIG_FILE_PATH="/etc/jitsi/uploader"
 #make this backed by a decent sized disk
 [ -z "$FAILED_UPLOAD_DIR" ] && FAILED_UPLOAD_DIR="/tmp/failed"
 
+# determine if it's used by the recording recovery service
+[ -z "$RECOVER_REC" ] && RECOVER_REC=false
+
 #assume supporting binaries are in /usr/bin
 BIN_PATH="/usr/bin"
 
@@ -126,6 +129,8 @@ if [ $MRET -eq 0 ]; then
     #remove the files from the directory
     rm $UPLOAD_DIR/*
     rmdir $UPLOAD_DIR
+elif [ $RECOVER_REC == true ]; then
+    exit $MRET
 else
     FAILED_UPLOAD_PATH="$FAILED_UPLOAD_DIR/$(basename $UPLOAD_DIR)"
     echo $(date) "END FAILURE Moving remaining upload files in \"$UPLOAD_DIR\" to \"$FAILED_UPLOAD_DIR\""
