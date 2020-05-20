@@ -92,7 +92,7 @@ function process_upload_dir {
         echo "Upload Candidate $b"
         EXT="${b##*.}"
         MTIME=$(stat -c %Y "$i")
-        FDATE=$(date --date="@$MTIME" '+%F %R')
+        FDATE=$(date --date="@$MTIME" '+%F %H-%M')
         if [[ "$EXT" == "pdf" ]]; then
           FINAL_UPLOAD_PATH="/Transcripts/$URL_NAME on $FDATE.pdf"
           UPLOAD_FLAG=1
