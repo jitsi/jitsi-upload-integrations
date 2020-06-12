@@ -8,9 +8,13 @@ CONFIG_FILE_PATH="/etc/jitsi/uploader"
 #make this backed by a decent sized disk
 [ -z "$FAILED_UPLOAD_DIR" ] && FAILED_UPLOAD_DIR="/tmp/failed"
 
+# determine if it's used by the recording recovery service
+[ -z "$RECOVER_REC" ] && RECOVER_REC=false
+
 #assume supporting binaries are in /usr/bin
 BIN_PATH="/usr/bin"
 
+# the directory where the files and metadata exists
 UPLOAD_DIR=$1
 
 if [ -z "$UPLOAD_DIR" ]; then
@@ -39,49 +43,42 @@ URL=$(cat $METADATA_JSON | jq -r ".meeting_url")
 [[ "$URL" == "null" ]] && URL=""
 URL_NAME="${URL##*/}"
 
-if [[ -z "$UPLOAD_TYPE" ]]; then
-
-  if [[ -f $BIN_PATH/jitsi-recording-service.sh ]] && [[ -x $BIN_PATH/jitsi-recording-service.sh ]]; then
-    $BIN_PATH/jitsi-recording-service.sh $UPLOAD_DIR
-    exit $?
-  fi
-
-  echo "No upload type found, skipping upload..."
-  exit 4
-fi
-
-
-if [[ -z "$TOKEN" ]]; then
-  echo "No upload credentials found, skipping upload..."
-  exit 5
+if [[ -z "$UPLOAD_TYPE" &&  -f $BIN_PATH/jitsi-recording-service.sh && -x $BIN_PATH/jitsi-recording-service.sh ]]; then
+  UPLOAD_TYPE="custom"
 fi
 
 case "$UPLOAD_TYPE" in
-"dropbox")
+  "dropbox")
     UPLOAD_FUNC="dropbox_upload"
     ;;
-*)
+  "custom")
+    UPLOAD_FUNC="custom_upload"
+    ;;
+  *)
     echo "Unknown upload type $UPLOAD_TYPE, skipping upload..."
     exit 6
     ;;
 esac
 
-#db uploader function
-# $1 - current path to source file
-# $2 - full path of destination
-function dropbox_upload {
-    echo "Upload method: dropbox"
-    UPLOAD_BIN="$BIN_PATH/dropbox_uploader.sh"
-    export OAUTH_ACCESS_TOKEN=$TOKEN
-    $UPLOAD_BIN -b upload "$1" "$2"
+# uploads the recording to an external storage service
+function custom_upload {
+    $BIN_PATH/jitsi-recording-service.sh $1
     return $?
 }
 
 #processes direct with uploads
 # $1 - path to directory for upload
-function process_upload_dir {
+function dropbox_upload {
+    echo "Upload method: dropbox"
     #final return defaults to success
     FRET=0;
+    if [[ -z $TOKEN ]]; then
+        echo "No upload credentials found, skipping upload..."
+        exit 5
+    fi
+    UPLOAD_BIN="$BIN_PATH/dropbox_uploader.sh"
+    export OAUTH_ACCESS_TOKEN=$TOKEN
+
     for i in $1/*; do
       b=$(basename "$i")
       if [[ "$b" == "metadata.json" ]]; then
@@ -106,7 +103,7 @@ function process_upload_dir {
 
         if [[ $UPLOAD_FLAG == 1 ]]; then
           echo "Uploading file $i to path $FINAL_UPLOAD_PATH"
-          $UPLOAD_FUNC "$i" "$FINAL_UPLOAD_PATH"
+          $UPLOAD_BIN -b upload "$i" "$FINAL_UPLOAD_PATH"
           URET=$?
           #assign the final return value if non-zero return was found on upload
           if [[ $FRET == 0 ]] && [[ $URET != 0 ]]; then
@@ -122,7 +119,8 @@ function process_upload_dir {
 echo $(date) "START Uploader tool received path \"$UPLOAD_DIR\""
 echo $(date) $(ls -l $UPLOAD_DIR 2>&1)
 
-process_upload_dir $UPLOAD_DIR
+# main
+$UPLOAD_FUNC $UPLOAD_DIR
 
 MRET=$?
 
@@ -131,6 +129,8 @@ if [ $MRET -eq 0 ]; then
     #remove the files from the directory
     rm $UPLOAD_DIR/*
     rmdir $UPLOAD_DIR
+elif [ $RECOVER_REC == true ]; then
+    exit $MRET
 else
     FAILED_UPLOAD_PATH="$FAILED_UPLOAD_DIR/$(basename $UPLOAD_DIR)"
     echo $(date) "END FAILURE Moving remaining upload files in \"$UPLOAD_DIR\" to \"$FAILED_UPLOAD_DIR\""
