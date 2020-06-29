@@ -132,11 +132,17 @@ if [ $MRET -eq 0 ]; then
 elif [ $RECOVER_REC == true ]; then
     exit $MRET
 else
-    FAILED_UPLOAD_PATH="$FAILED_UPLOAD_DIR/$(basename $UPLOAD_DIR)"
-    echo $(date) "END FAILURE Moving remaining upload files in \"$UPLOAD_DIR\" to \"$FAILED_UPLOAD_DIR\""
-    #move the whle upload dir to failed processing
-    mkdir -p $FAILED_UPLOAD_PATH
-    mv $UPLOAD_DIR/* $FAILED_UPLOAD_PATH
+    # check for existance of custom upload failure handler, use if found
+    if [[ -f $BIN_PATH/jitsi-recording-upload-failure.sh && -x $BIN_PATH/jitsi-recording-upload-failure.sh ]]; then
+      $BIN_PATH/jitsi-recording-upload-failure.sh $UPLOAD_DIR
+    else
+      # default failure handler case, use mv to move failed files to failure directory
+      FAILED_UPLOAD_PATH="$FAILED_UPLOAD_DIR/$(basename $UPLOAD_DIR)"
+      echo $(date) "END FAILURE Moving remaining upload files in \"$UPLOAD_DIR\" to \"$FAILED_UPLOAD_DIR\""
+      #move the whle upload dir to failed processing
+      mkdir -p $FAILED_UPLOAD_PATH
+      mv $UPLOAD_DIR/* $FAILED_UPLOAD_PATH
+    fi
 fi
 
 # exit based on return of upload processing
