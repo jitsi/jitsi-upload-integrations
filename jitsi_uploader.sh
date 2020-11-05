@@ -96,6 +96,9 @@ function dropbox_upload {
         elif [[ "$EXT" == "mp4" ]]; then
           FINAL_UPLOAD_PATH="/Recordings/$URL_NAME on $FDATE.mp4"
           UPLOAD_FLAG=1
+        elif [[ "$EXT" == "txt" ]]; then
+          FINAL_UPLOAD_PATH="/Recordings/$URL_NAME on $FDATE.txt"
+          UPLOAD_FLAG=1
         else
           #skip this one, not a known type
           echo "Unknown extension $EXT, skipping $b"
