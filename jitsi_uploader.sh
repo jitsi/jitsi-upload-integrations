@@ -36,6 +36,10 @@ if [[ ! -e "$METADATA_JSON" ]]; then
   exit 3
 fi
 
+[[ -z "$REFRESH_TOKEN" ]] && REFRESH_TOKEN=$(cat $METADATA_JSON | jq -r ".upload_credentials.r_token")
+[[ "$REFRESH_TOKEN" == "null" ]] && REFRESH_TOKEN=""
+[[ -z "$APP_KEY" ]] && APP_KEY=$(cat $METADATA_JSON | jq -r ".upload_credentials.app_key")
+[[ "$APP_KEY" == "null" ]] && APP_KEY=""
 #only read token from metadata if token is not already defined
 [[ -z "$TOKEN" ]] && TOKEN=$(cat $METADATA_JSON | jq -r ".upload_credentials.token")
 [[ "$TOKEN" == "null" ]] && TOKEN=""
@@ -79,7 +83,9 @@ function dropbox_upload {
         exit 5
     fi
     UPLOAD_BIN="$BIN_PATH/dropbox_uploader.sh"
-    export OAUTH_ACCESS_TOKEN=$TOKEN
+    export OAUTH_ACCESS_TOKEN="$TOKEN"
+    export OAUTH_REFRESH_TOKEN="$REFRESH_TOKEN"
+    export OAUTH_CLIENT_ID="$APP_KEY"
 
     for i in $1/*; do
       b=$(basename "$i")
