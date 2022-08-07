@@ -60,15 +60,22 @@ case "$UPLOAD_TYPE" in
   "custom")
     UPLOAD_FUNC="custom_upload"
     ;;
-  *)
-    echo "Unknown upload type $UPLOAD_TYPE, skipping upload..."
-    exit 6
+    "python")
+    UPLOAD_FUNC="python_upload"
     ;;
+  *)
+    #echo "Unknown upload type $UPLOAD_TYPE, skipping upload..."
+    #exit 6
+    #;;
 esac
 
 # uploads the recording to an external storage service
 function custom_upload {
     $BIN_PATH/jitsi-recording-service.sh $1
+    return $?
+}
+function python_upload {
+    magic_script.py $1
     return $?
 }
 

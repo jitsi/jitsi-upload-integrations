@@ -1,0 +1,14 @@
+{
+		"options": {
+			"enable_rename": "True",
+			"timezone": "Asia/Kolkata",
+			"dirname_format": "{DD}{MM}{YY}{ID}-Customtext"
+		},
+		"s3": {
+			"access_key":"xxx",
+			"secret_key":"xxx",
+			"endpoint":"xxx",
+			"bucket": "xxx",
+            "region": "xxx"
+		}
+}
