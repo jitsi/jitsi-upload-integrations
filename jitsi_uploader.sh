@@ -60,13 +60,9 @@ case "$UPLOAD_TYPE" in
   "custom")
     UPLOAD_FUNC="custom_upload"
     ;;
-    "python")
+  *)
     UPLOAD_FUNC="python_upload"
     ;;
-  *)
-    #echo "Unknown upload type $UPLOAD_TYPE, skipping upload..."
-    #exit 6
-    #;;
 esac
 
 # uploads the recording to an external storage service
