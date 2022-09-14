@@ -13,14 +13,14 @@ import dropbox
 from boxsdk import OAuth2, Client
 
 
-CONFIGFILE = "/mnt/gsoc/test/s3/config.json"
+CONFIGFILE = "config.json"
 with open(CONFIGFILE) as data:
     config_v = json.load(data)
-    
+
 class Namer:
     def name(self, config_v, orig_name, timezone, name_format):
         dateTime = datetime.now(timezone)
-        name_raw = name_format.format(H = dateTime.hour, 
+        name_raw = name_format.format(H = dateTime.hour,
                                M = dateTime.minute,
                                S = dateTime.second,
                                DD = dateTime.day,
@@ -45,7 +45,7 @@ class s3_remote:
             self.object_name = os.path.basename(self.file_path)
 
         #self.object_name = params['object_name']
-                
+
     def upload(self):
         #if self.object_name is None:
         #    self.object_name = os.path.basename(self.file_path)
@@ -55,7 +55,7 @@ class s3_remote:
         except Exception as err:
             logging.error(err)
             return False
-        
+
 
 class dropbox_remote:
     def __init__(self, creds, params):
@@ -114,7 +114,7 @@ class dropbox_remote:
                         cursor.offset = f.tell()
 
 class box_remote:
-    def __init__(self, box, params): 
+    def __init__(self, box, params):
         self.auth = OAuth2(
             client_id= box['client_id'],
             client_secret= box['client_secret'],
@@ -188,35 +188,35 @@ class upload:
         self.params['filepath'] = filepath
         #self.params['remotepath'] = None
         #self.call_cloud()
-    
+
     def call_cloud(self):
         #if(config_v['options']['enable_rename']):
      #   self.new_file_name = Namer.name(config_v, self.file_name, config_v['options']['timezone'], config_v['options']['name_format'] )
     #else:
     #    self.new_file_name = None
-    #disabled due to testing    
+    #disabled due to testing
     #admin_upload = upload(config_v['cloud'], self.file_name) #self.new_file_name)
     #---Not-in-use-in-test--renaming---
-        
+
         #FILTER FILE NAME AND PATH BEFORE SENDING
         remote = self.metadata['upload_credentials']['service_name']
         try:
             self.params['remotepath'] = self.metadata['upload_credentials']['remotepath']    
         except KeyError:
             self.params['remotepath'] = 'Jitsi/'
-        
+
         if(remote == 's3'):
             return self.s3()
         if(remote == 'box'):
             return self.boxs()
         if(remote == 'dropbox'):
             return self.dropb()
-        
+
     def s3(self):
-        self.creds = config_v['s3']        
+        self.creds = config_v['s3']
         s3r = s3_remote(self.creds, self.params)
         return s3r.upload()
-    
+
     def dropb(self):
         self.creds = self.metadata['upload_credentials']
         dpr = dropbox_remote(self.creds, self.params)
@@ -247,14 +247,14 @@ class call:
                     tname = source + filename
                 else:
                     tname = source + '/' + filename
-                start_upload = upload(mname, tname).call_cloud()  
+                start_upload = upload(mname, tname).call_cloud()
                 if(start_upload == True):
                     #Upload Done
                     sys.exit(0)
                 else:
                     #Upload Failed
                     sys.exit(2)
-        
+
 def main():
     n = len(sys.argv)
     if(n>=1):
